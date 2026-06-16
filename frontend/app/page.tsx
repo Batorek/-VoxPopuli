@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [imie, setImie] = useState("");
@@ -41,6 +42,8 @@ export default function Home() {
   return (
     <main className="min-h-screen p-8 bg-gray-100 text-black flex items-center justify-center">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+	<Link href="/ankiety" className="text-blue-600 underline block text-center mb-4">Zobacz ankiety</Link>
+
         <h1 className="text-2xl font-bold mb-6 text-center">Napisz do nas</h1>
         
         
@@ -80,3 +83,4 @@ export default function Home() {
     </main>
   );
 }
+

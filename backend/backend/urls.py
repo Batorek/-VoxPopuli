@@ -30,4 +30,5 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')), #Authentication
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),#JWT
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),#JWT
+    path('api/surveys/', include('surveys.urls')),
 ]
