@@ -1,18 +1,25 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User
+#from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import authenticate
+#from django.contrib.auth.models import User
+from .models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import RefreshToken
+from role_management import czy_jest_zarejestrowanym_mieszkancem
 
 @api_view(['POST'])
 def register_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
     email = request.data.get('email')
+    pesel = request.data.get('pesel')
+    imie = request.data.get('imie', '')
+    nazwisko = request.data.get('nazwisko', '')
 
     if not username or not password or not email:
         return Response({'error': 'Podaj login, haslo i email'}, status=400)
@@ -20,20 +27,29 @@ def register_view(request):
     if User.objects.filter(username=username).exists():
         return Response({'error': 'Uzytkownik juz istnieje'}, status=400)
 
-    # 1. Tworzenie nieaktywnego użytkownika
+    # 1. Sprawdzenie czy to zweryfikowany mieszkaniec (nowe)
+    rola = 'gosc'
+    czy_zweryfikowany = False
+    if pesel and czy_jest_zarejestrowanym_mieszkancem(imie, nazwisko, pesel):
+        rola = 'mieszkaniec'
+        czy_zweryfikowany = True
+
+    # 2. Tworzenie nieaktywnego użytkownika (Twoja oryginalna logika + nowe pola)
     user = User.objects.create_user(
         username=username,
         password=password,
         email=email,
-        is_active=False
+        is_active=False,
+        rola=rola,
+        czy_zweryfikowany=czy_zweryfikowany,
     )
 
-    # 2. Generowanie tokena i linku
+    # 3. Generowanie tokena i linku (bez zmian, tylko port zmieniony na 8902)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
-    link = f"http://127.0.0.1:8000/api/accounts/activate/{uid}/{token}/"
+    link = f"http://149.156.194.192:8902/api/accounts/activate/{uid}/{token}/"
 
-    # 3. Wysłanie maila (wynik zobaczysz w terminalu)
+    # 4. Wysłanie maila (bez zmian)
     send_mail(
         subject='Aktywacja konta',
         message=f'Kliknij w link, aby aktywowac konto: {link}',
@@ -68,10 +84,16 @@ def login_view(request):
     if user:
         if not user.is_active:
             return Response({'error': 'Konto nie jest aktywne. Sprawdz email!'}, status=403)
-        
-        login(request._request, user)
-        return Response({'message': 'Zalogowano!'})
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        })
     return Response({'error': 'Nieprawidlowy login lub haslo'}, status=400)
+        
+        #login(request._request, user)
+       # return Response({'message': 'Zalogowano!'})
+    #return Response({'error': 'Nieprawidlowy login lub haslo'}, status=400)
 
 @api_view(['POST'])
 def logout_view(request):

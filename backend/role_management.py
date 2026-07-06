@@ -22,15 +22,15 @@ ROLE_UPRAWNIENIA = {
 }
 
 def czy_jest_zarejestrowanym_mieszkancem(imie, nazwisko, pesel):
-    sciezka_do_pliku = 'citizen.base.csv'
+    #sciezka_do_pliku = 'citizen_base.csv'
+    sciezka_do_pliku = os.path.join(os.path.dirname(__file__), 'citizen_base.csv')
     
     if not os.path.exists(sciezka_do_pliku):
-        return False, None
+        return False
 
     with open(sciezka_do_pliku, mode='r', encoding='utf-8') as plik:
         czytnik_csv = csv.DictReader(plik)
         for wiersz in czytnik_csv:
-            #ignorujemy wielkość liter i przypadkowe spacje
             if wiersz['imie'].strip().lower() == imie.strip().lower() and \
                wiersz['nazwisko'].strip().lower() == nazwisko.strip().lower() and \
                wiersz['pesel'].strip() == str(pesel).strip():

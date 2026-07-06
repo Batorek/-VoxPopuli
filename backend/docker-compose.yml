@@ -7,22 +7,29 @@ services:
       POSTGRES_DB: voxpopuli
       POSTGRES_USER: voxuser
       POSTGRES_PASSWORD: voxpass
+    ports:
+      - "5432:5432"
     volumes:
-      - ./db/init:/docker-entrypoint-initdb.d
+      #- ./db/init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-    network_mode: host
+   # network_mode: host
 
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8902
     volumes:
       - .:/app
+    ports:
+      - "8902:8902"
     environment:
       - DEBUG=1
-      - SECRET_KEY=django-insecure-twoj-klucz
+      #- SECRET_KEY=${SECRET_KEY}
+      - DB_HOST=db
+      #- SECRET_KEY=django-insecure-twoj-klucz
+     # - NEXT_PUBLIC_API_URL=http://149.156.194.192:8902
     depends_on:
       - db
-    network_mode: host
+    #network_mode: host
 
 volumes:
   postgres_data:

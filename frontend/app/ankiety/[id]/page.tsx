@@ -24,7 +24,7 @@ export default function AnkietaPage() {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8902/api/surveys/ankiety/${id}/`)
+    fetch(`http://149.156.194.192:8902/api/surveys/ankiety/${id}/`)
       .then((r) => r.json())
       .then(setAnkieta);
   }, [id]);
@@ -35,7 +35,7 @@ export default function AnkietaPage() {
 
     try {
       for (const [pytanieId, tresc] of Object.entries(odpowiedzi)) {
-        await fetch(`http://127.0.0.1:8902/api/surveys/ankiety/${id}/odpowiedzi/`, {
+        await fetch(`http://149.156.194.192:8902/api/surveys/ankiety/${id}/odpowiedzi/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pytanie: Number(pytanieId), tresc_odpowiedzi: tresc }),

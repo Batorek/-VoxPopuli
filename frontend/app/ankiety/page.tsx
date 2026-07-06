@@ -16,7 +16,7 @@ export default function AnkietyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8902/api/surveys/ankiety/")
+    fetch("http://149.156.194.192:8902/api/surveys/ankiety/")
       .then((r) => r.json())
       .then((data) => { setAnkiety(data); setLoading(false); })
       .catch(() => setLoading(false));
