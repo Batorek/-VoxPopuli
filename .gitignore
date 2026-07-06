@@ -145,7 +145,7 @@ vite.config.ts.timestamp-*
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.sqlite3
 db.sqlite3
 db.sqlite3-journal
 backend/db.sqlite3
