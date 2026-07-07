@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    network_mode: host
+    command: ["postgres", "-p", "8903"]
+    environment:
+      POSTGRES_DB: voxpopuli
+      POSTGRES_USER: voxuser
+      POSTGRES_PASSWORD: voxpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    network_mode: host
+    command: sh -c "sleep 8 && python manage.py migrate && python manage.py seed_demo && python manage.py runserver 0.0.0.0:8902"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=1
+      - DB_HOST=127.0.0.1
+      - DB_PORT=8903
+      - PUBLIC_BACKEND_URL=http://149.156.194.192:8902
+      - BIELIK_BASE_URL=${BIELIK_BASE_URL:-http://149.156.194.192:8080/v1}
+      - BIELIK_API_KEY=${BIELIK_API_KEY}
+      - BIELIK_MODEL=${BIELIK_MODEL:-SpeakLeash/bielik-11b-v3.0-instruct:Q4_K_M}
+      - BIELIK_TIMEOUT=${BIELIK_TIMEOUT:-30}
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://149.156.194.192:8902/api
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${NEXT_PUBLIC_MAPBOX_TOKEN}
+    network_mode: host
+    environment:
+      - NEXT_PUBLIC_API_URL=http://149.156.194.192:8902/api
+      - NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
